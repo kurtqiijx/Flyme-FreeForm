@@ -482,6 +482,7 @@ class FreeformView(
         binding.freeformRoot.alpha = 1f
         binding.textureView.alpha = 0f
         addCloseButton()
+        addDragHandle()
     }
 private fun addCloseButton() {
         val closeButton = TextView(context).apply {
@@ -490,7 +491,7 @@ private fun addCloseButton() {
             setTextColor(Color.WHITE)
             background = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.OVAL
-            setBackgroundColor(Color.parseColor("#9E9E9E"))
+            setColor(Color.parseColor("#9E9E9E"))
             }
             gravity = Gravity.CENTER
             setOnClickListener {
@@ -508,6 +509,67 @@ private fun addCloseButton() {
         (binding.freeformRoot as ConstraintLayout).addView(closeButton, params)
         closeButton.elevation = 100f
 }
+    private fun addDragHandle() {
+        val dragHandle = View(context).apply {
+            setBackgroundColor(Color.parseColor("#9E9E9E"))
+        }
+        val widthPx = (40 * context.resources.displayMetrics.density).roundToInt()
+        val heightPx = (4 * context.resources.displayMetrics.density).roundToInt()
+        val topMarginPx = (6 * context.resources.displayMetrics.density).roundToInt()
+        val params = ConstraintLayout.LayoutParams(widthPx, heightPx).apply {
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            topMargin = topMarginPx
+        }
+        (binding.freeformRoot as ConstraintLayout).addView(dragHandle, params)
+        dragHandle.elevation = 100f
+
+        var isDragging = false
+        var downRawX = 0f
+        var downRawY = 0f
+        var startWindowX = 0
+        var startWindowY = 0
+        val longPressHandler = android.os.Handler(android.os.Looper.getMainLooper())
+        var longPressRunnable: Runnable? = null
+
+        dragHandle.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downRawX = event.rawX
+                    downRawY = event.rawY
+                    startWindowX = windowLayoutParams.x
+                    startWindowY = windowLayoutParams.y
+                    isDragging = false
+                    longPressRunnable = Runnable {
+                        isDragging = true
+                    }
+                    longPressHandler.postDelayed(longPressRunnable!!, 400)
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (isDragging) {
+                        val dx = (event.rawX - downRawX).roundToInt()
+                        val dy = (event.rawY - downRawY).roundToInt()
+                        windowManager.updateViewLayout(
+                            binding.root,
+                            windowLayoutParams.apply {
+                                x = startWindowX + dx
+                                y = startWindowY + dy
+                            }
+                        )
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    longPressRunnable?.let { longPressHandler.removeCallbacks(it) }
+                    isDragging = false
+                    true
+                }
+                else -> false
+            }
+        }
+    }
     private fun performBackKey() {
         val downEvent = KeyEvent(
             SystemClock.uptimeMillis(),
