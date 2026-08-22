@@ -1110,6 +1110,7 @@ class FreeformView(
 
                 mScaleX = freeformWidth / rootWidth.toFloat()
                 mScaleY = freeformHeight / rootHeight.toFloat()
+                refreshTouchScale()
 
                 isZoomOut = true
             }
@@ -1128,6 +1129,7 @@ class FreeformView(
 
                 mScaleX = freeformWidth / rootWidth.toFloat()
                 mScaleY = freeformHeight / rootHeight.toFloat()
+                refreshTouchScale()
 
                 isZoomOut = true
             }
