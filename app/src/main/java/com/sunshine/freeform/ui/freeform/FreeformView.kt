@@ -486,7 +486,9 @@ private fun addCloseButton() {
             text = "\u2715"
             textSize = 14f
             setTextColor(Color.WHITE)
-            setBackgroundColor(Color.parseColor("#80000000"))
+            background = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.OVAL
+            setBackgroundColor(Color.parseColor("#9E9E9E"))
             gravity = Gravity.CENTER
             setOnClickListener {
                 destroy()
