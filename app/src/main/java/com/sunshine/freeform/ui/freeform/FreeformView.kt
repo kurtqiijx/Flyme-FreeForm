@@ -489,6 +489,7 @@ private fun addCloseButton() {
             background = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.OVAL
             setBackgroundColor(Color.parseColor("#9E9E9E"))
+            }
             gravity = Gravity.CENTER
             setOnClickListener {
                 destroy()
