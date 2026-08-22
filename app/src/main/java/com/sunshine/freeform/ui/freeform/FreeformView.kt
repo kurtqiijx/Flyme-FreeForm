@@ -24,6 +24,7 @@ import android.util.Log
 import android.view.*
 import android.view.animation.*
 import android.widget.Toast
+import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
@@ -478,8 +479,30 @@ class FreeformView(
 
         binding.freeformRoot.alpha = 1f
         binding.textureView.alpha = 0f
+        addCloseButton()
     }
-
+private fun addCloseButton() {
+        val closeButton = TextView(context).apply {
+            text = "\u2715"
+            textSize = 14f
+            setTextColor(Color.WHITE)
+            setBackgroundColor(Color.parseColor("#80000000"))
+            gravity = Gravity.CENTER
+            setOnClickListener {
+                destroy()
+            }
+        }
+        val sizePx = (28 * context.resources.displayMetrics.density).roundToInt()
+        val marginPx = (8 * context.resources.displayMetrics.density).roundToInt()
+        val params = ConstraintLayout.LayoutParams(sizePx, sizePx).apply {
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            topMargin = marginPx
+            rightMargin = marginPx
+        }
+        (binding.freeformRoot as ConstraintLayout).addView(closeButton, params)
+        closeButton.elevation = 100f
+}
     private fun performBackKey() {
         val downEvent = KeyEvent(
             SystemClock.uptimeMillis(),
