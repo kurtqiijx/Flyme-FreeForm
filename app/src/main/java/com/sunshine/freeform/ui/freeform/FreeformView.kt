@@ -510,11 +510,15 @@ private fun addCloseButton() {
         closeButton.elevation = 100f
 }
     private fun addDragHandle() {
+        val insetPx = (10 * context.resources.displayMetrics.density).roundToInt()
         val dragHandle = View(context).apply {
-            setBackgroundColor(Color.parseColor("#9E9E9E"))
+            background = android.graphics.drawable.InsetDrawable(
+                android.graphics.drawable.ColorDrawable(Color.parseColor("#9E9E9E")),
+                0, insetPx, 0, insetPx
+            )
         }
         val widthPx = (40 * context.resources.displayMetrics.density).roundToInt()
-        val heightPx = (4 * context.resources.displayMetrics.density).roundToInt()
+        val heightPx = (24 * context.resources.displayMetrics.density).roundToInt()
         val topMarginPx = (6 * context.resources.displayMetrics.density).roundToInt()
         val params = ConstraintLayout.LayoutParams(widthPx, heightPx).apply {
             topToTop = ConstraintLayout.LayoutParams.PARENT_ID
