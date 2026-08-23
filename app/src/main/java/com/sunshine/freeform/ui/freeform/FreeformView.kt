@@ -25,6 +25,7 @@ import android.view.*
 import android.view.animation.*
 import android.widget.Toast
 import android.widget.TextView
+import android.widget.LinearLayout
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.animation.addListener
@@ -67,6 +68,8 @@ class FreeformView(
     private lateinit var binding: ViewFreeformFlymeBinding
 
     private lateinit var backgroundView: View
+        private lateinit var gamePanel: LinearLayout
+    private var isGamePanelOpen = false
 
     //该小窗是否已经销毁
     var isDestroy = false
@@ -483,6 +486,7 @@ class FreeformView(
         binding.textureView.alpha = 0f
         addCloseButton()
         addDragHandle()
+        addGameModePanel()
     }
 private fun addCloseButton() {
         val closeButton = TextView(context).apply {
@@ -573,6 +577,81 @@ private fun addCloseButton() {
                 else -> false
             }
         }
+    }
+    private fun addGameModePanel() {
+        val panelWidthPx = (56 * context.resources.displayMetrics.density).roundToInt()
+
+        gamePanel = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setBackgroundColor(Color.parseColor("#E6212121"))
+            gravity = Gravity.CENTER_HORIZONTAL
+        }
+
+        val panelParams = ConstraintLayout.LayoutParams(panelWidthPx, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT).apply {
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+        }
+        (binding.freeformRoot as ConstraintLayout).addView(gamePanel, panelParams)
+        gamePanel.elevation = 200f
+        gamePanel.translationX = panelWidthPx.toFloat()
+
+        val closeButton = TextView(context).apply {
+            text = "\u2715"
+            textSize = 16f
+            setTextColor(Color.WHITE)
+            gravity = Gravity.CENTER
+            setPadding(0, (16 * context.resources.displayMetrics.density).roundToInt(), 0, (16 * context.resources.displayMetrics.density).roundToInt())
+            setOnClickListener {
+                destroy()
+            }
+        }
+        gamePanel.addView(closeButton)
+
+        val edgeDetector = View(context)
+        val edgeParams = ConstraintLayout.LayoutParams(panelWidthPx, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT).apply {
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+        }
+        (binding.freeformRoot as ConstraintLayout).addView(edgeDetector, edgeParams)
+        edgeDetector.elevation = 150f
+
+        var edgeDownX = 0f
+        edgeDetector.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    edgeDownX = event.rawX
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dx = edgeDownX - event.rawX
+                    if (!isGamePanelOpen && dx > (30 * context.resources.displayMetrics.density)) {
+                        openGamePanel()
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    val dx = edgeDownX - event.rawX
+                    if (isGamePanelOpen && kotlin.math.abs(dx) < (10 * context.resources.displayMetrics.density)) {
+                        closeGamePanel()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+
+    private fun openGamePanel() {
+        isGamePanelOpen = true
+        gamePanel.animate().translationX(0f).setDuration(200).start()
+    }
+
+    private fun closeGamePanel() {
+        isGamePanelOpen = false
+        val panelWidthPx = gamePanel.width
+        gamePanel.animate().translationX(panelWidthPx.toFloat()).setDuration(200).start()
     }
     private fun performBackKey() {
         val downEvent = KeyEvent(
