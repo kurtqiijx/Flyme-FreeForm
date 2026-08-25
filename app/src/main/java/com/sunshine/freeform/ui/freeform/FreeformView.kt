@@ -516,7 +516,7 @@ private fun addCloseButton() {
 }    private fun addDragHandle() {
     val dragHandle = TextView(context).apply {
         text = "\u2022\u2022\u2022"
-        textSize = 12f
+        textSize = 20f
         setTextColor(Color.parseColor("#4CAF50"))
         gravity = Gravity.CENTER
     }
@@ -578,14 +578,43 @@ private fun addCloseButton() {
             }
         }
     }
-    private fun addResizeHandle() {
-        val handle = TextView(context).apply {
-            text = "\u25E2"
-            textSize = 14f
-            setTextColor(Color.parseColor("#9E9E9E"))
-            gravity = Gravity.BOTTOM or Gravity.END
+        private fun addResizeHandle() {
+        val cornerColor = Color.WHITE
+        val thicknessPx = (4 * context.resources.displayMetrics.density).roundToInt()
+        val armLengthPx = (24 * context.resources.displayMetrics.density).roundToInt()
+        val sizePx = (48 * context.resources.displayMetrics.density).roundToInt()
+
+        var isResizing = false
+        var downRawX = 0f
+        var downRawY = 0f
+        var startWidth = 0
+        var startHeight = 0
+        val longPressHandler = android.os.Handler(android.os.Looper.getMainLooper())
+        var longPressRunnable: Runnable? = null
+
+        val handle = object : View(context) {
+            override fun onDraw(canvas: android.graphics.Canvas) {
+                super.onDraw(canvas)
+                if (!isResizing) return
+                val paint = android.graphics.Paint().apply {
+                    color = cornerColor
+                    style = android.graphics.Paint.Style.STROKE
+                    strokeWidth = thicknessPx.toFloat()
+                    strokeCap = android.graphics.Paint.Cap.ROUND
+                    strokeJoin = android.graphics.Paint.Join.ROUND
+                    isAntiAlias = true
+                }
+                val w = width.toFloat()
+                val h = height.toFloat()
+                val path = android.graphics.Path().apply {
+                    moveTo(w - armLengthPx, h - thicknessPx / 2f)
+                    lineTo(w - thicknessPx / 2f, h - thicknessPx / 2f)
+                    lineTo(w - thicknessPx / 2f, h - armLengthPx)
+                }
+                canvas.drawPath(path, paint)
+            }
         }
-        val sizePx = (28 * context.resources.displayMetrics.density).roundToInt()
+
         val params = ConstraintLayout.LayoutParams(sizePx, sizePx).apply {
             bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
             endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
@@ -593,22 +622,17 @@ private fun addCloseButton() {
         (binding.freeformRoot as ConstraintLayout).addView(handle, params)
         handle.elevation = 150f
 
-        var isResizing = false
-        var downRawX = 0f
-        var downRawY = 0f
-        var startWidth = 0
-        val longPressHandler = android.os.Handler(android.os.Looper.getMainLooper())
-        var longPressRunnable: Runnable? = null
-
         handle.setOnTouchListener { _, event ->
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     downRawX = event.rawX
                     downRawY = event.rawY
                     startWidth = windowLayoutParams.width
+                    startHeight = windowLayoutParams.height
                     isResizing = false
                     longPressRunnable = Runnable {
                         isResizing = true
+                        handle.invalidate()
                     }
                     longPressHandler.postDelayed(longPressRunnable!!, 400)
                     true
@@ -616,8 +640,10 @@ private fun addCloseButton() {
                 MotionEvent.ACTION_MOVE -> {
                     if (isResizing) {
                         val dx = (event.rawX - downRawX).roundToInt()
-                        val newWidth = (startWidth + dx).coerceAtLeast((100 * context.resources.displayMetrics.density).roundToInt())
-                        val newHeight = (newWidth / config.widthHeightRatio).roundToInt()
+                        val dy = (event.rawY - downRawY).roundToInt()
+                        val minSizePx = (100 * context.resources.displayMetrics.density).roundToInt()
+                        val newWidth = (startWidth + dx).coerceAtLeast(minSizePx)
+                        val newHeight = (startHeight + dy).coerceAtLeast(minSizePx)
                         freeformWidth = newWidth
                         freeformHeight = newHeight
                         windowManager.updateViewLayout(
@@ -634,12 +660,13 @@ private fun addCloseButton() {
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     longPressRunnable?.let { longPressHandler.removeCallbacks(it) }
                     isResizing = false
+                    handle.invalidate()
                     true
                 }
                 else -> false
             }
         }
-    }
+        }
     private fun addGameModePanel() {
         val panelWidthPx = (56 * context.resources.displayMetrics.density).roundToInt()
 
