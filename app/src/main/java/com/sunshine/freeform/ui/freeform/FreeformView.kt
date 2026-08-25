@@ -702,7 +702,8 @@ private fun addCloseButton() {
             topToTop = ConstraintLayout.LayoutParams.PARENT_ID
             bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
             endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-            topMargin = (44 * context.resources.displayMetrics.density).roundToInt()
+            topMargin = edgeTopMarginPx
+            bottomMargin = (56 * context.resources.displayMetrics.density).roundToInt()
         }
         (binding.freeformRoot as ConstraintLayout).addView(edgeDetector, edgeParams)
         edgeDetector.elevation = 150f
