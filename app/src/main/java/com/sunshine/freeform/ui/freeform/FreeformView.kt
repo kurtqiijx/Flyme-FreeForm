@@ -486,6 +486,7 @@ class FreeformView(
         binding.textureView.alpha = 0f
         addCloseButton()
         addDragHandle()
+        addResizeHandle()
         addGameModePanel()
     }
 private fun addCloseButton() {
@@ -512,18 +513,17 @@ private fun addCloseButton() {
         }
         (binding.freeformRoot as ConstraintLayout).addView(closeButton, params)
         closeButton.elevation = 100f
-}
-    private fun addDragHandle() {
-        val insetPx = (10 * context.resources.displayMetrics.density).roundToInt()
-        val dragHandle = View(context).apply {
-            background = android.graphics.drawable.InsetDrawable(
-                android.graphics.drawable.ColorDrawable(Color.parseColor("#9E9E9E")),
-                0, insetPx, 0, insetPx
-            )
-        }
-        val widthPx = (40 * context.resources.displayMetrics.density).roundToInt()
-        val heightPx = (24 * context.resources.displayMetrics.density).roundToInt()
-        val topMarginPx = (6 * context.resources.displayMetrics.density).roundToInt()
+}    private fun addDragHandle() {
+    val dragHandle = TextView(context).apply {
+        text = "\u2022\u2022\u2022"
+        textSize = 12f
+        setTextColor(Color.parseColor("#4CAF50"))
+        gravity = Gravity.CENTER
+    }
+    val widthPx = (40 * context.resources.displayMetrics.density).roundToInt()
+    val heightPx = (24 * context.resources.displayMetrics.density).roundToInt()
+    val topMarginPx = (6 * context.resources.displayMetrics.density).roundToInt()
+    
         val params = ConstraintLayout.LayoutParams(widthPx, heightPx).apply {
             topToTop = ConstraintLayout.LayoutParams.PARENT_ID
             startToStart = ConstraintLayout.LayoutParams.PARENT_ID
@@ -572,6 +572,68 @@ private fun addCloseButton() {
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     longPressRunnable?.let { longPressHandler.removeCallbacks(it) }
                     isDragging = false
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+    private fun addResizeHandle() {
+        val handle = TextView(context).apply {
+            text = "\u25E2"
+            textSize = 14f
+            setTextColor(Color.parseColor("#9E9E9E"))
+            gravity = Gravity.BOTTOM or Gravity.END
+        }
+        val sizePx = (28 * context.resources.displayMetrics.density).roundToInt()
+        val params = ConstraintLayout.LayoutParams(sizePx, sizePx).apply {
+            bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+        }
+        (binding.freeformRoot as ConstraintLayout).addView(handle, params)
+        handle.elevation = 150f
+
+        var isResizing = false
+        var downRawX = 0f
+        var downRawY = 0f
+        var startWidth = 0
+        val longPressHandler = android.os.Handler(android.os.Looper.getMainLooper())
+        var longPressRunnable: Runnable? = null
+
+        handle.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                MotionEvent.ACTION_DOWN -> {
+                    downRawX = event.rawX
+                    downRawY = event.rawY
+                    startWidth = windowLayoutParams.width
+                    isResizing = false
+                    longPressRunnable = Runnable {
+                        isResizing = true
+                    }
+                    longPressHandler.postDelayed(longPressRunnable!!, 400)
+                    true
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    if (isResizing) {
+                        val dx = (event.rawX - downRawX).roundToInt()
+                        val newWidth = (startWidth + dx).coerceAtLeast((100 * context.resources.displayMetrics.density).roundToInt())
+                        val newHeight = (newWidth / config.widthHeightRatio).roundToInt()
+                        freeformWidth = newWidth
+                        freeformHeight = newHeight
+                        windowManager.updateViewLayout(
+                            binding.root,
+                            windowLayoutParams.apply {
+                                width = newWidth
+                                height = newHeight
+                            }
+                        )
+                        refreshTouchScale()
+                    }
+                    true
+                }
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                    longPressRunnable?.let { longPressHandler.removeCallbacks(it) }
+                    isResizing = false
                     true
                 }
                 else -> false
