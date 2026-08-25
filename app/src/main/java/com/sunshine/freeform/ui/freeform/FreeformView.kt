@@ -669,6 +669,7 @@ private fun addCloseButton() {
         }
     private fun addGameModePanel() {
         val panelWidthPx = (56 * context.resources.displayMetrics.density).roundToInt()
+        val edgeTopMarginPx = (44 * context.resources.displayMetrics.density).roundToInt()
 
         gamePanel = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
