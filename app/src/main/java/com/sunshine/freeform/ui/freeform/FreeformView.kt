@@ -668,82 +668,159 @@ private fun addCloseButton() {
         }
         }
     private fun addGameModePanel() {
-        val panelWidthPx = (56 * context.resources.displayMetrics.density).roundToInt()
-        val edgeTopMarginPx = (44 * context.resources.displayMetrics.density).roundToInt()
+        val density = context.resources.displayMetrics.density
+        val panelWidthPx = (180 * density).roundToInt()
 
         gamePanel = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setBackgroundColor(Color.parseColor("#E6212121"))
-            gravity = Gravity.CENTER_HORIZONTAL
+            setPadding((12 * density).roundToInt(), (12 * density).roundToInt(), (12 * density).roundToInt(), (12 * density).roundToInt())
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(Color.parseColor("#EE212121"))
+                cornerRadius = 16 * density
+            }
+            alpha = 0f
+            visibility = View.GONE
         }
-
-        val panelParams = ConstraintLayout.LayoutParams(panelWidthPx, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT).apply {
-            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
-            bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
-            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-        }
-        (binding.freeformRoot as ConstraintLayout).addView(gamePanel, panelParams)
-        gamePanel.elevation = 200f
-        gamePanel.translationX = panelWidthPx.toFloat()
 
         val closeButton = TextView(context).apply {
-            text = "\u2715"
-            textSize = 16f
+            text = "\u2715  Close"
+            textSize = 12f
             setTextColor(Color.WHITE)
-            gravity = Gravity.CENTER
-            setPadding(0, (16 * context.resources.displayMetrics.density).roundToInt(), 0, (16 * context.resources.displayMetrics.density).roundToInt())
-            setOnClickListener {
-                destroy()
-            }
+            setPadding(0, 0, 0, (10 * density).roundToInt())
+            setOnClickListener { closeGamePanel() }
         }
         gamePanel.addView(closeButton)
 
-        val edgeDetector = View(context)
-        val edgeParams = ConstraintLayout.LayoutParams(panelWidthPx, ConstraintLayout.LayoutParams.MATCH_CONSTRAINT).apply {
+        val gaugeRow = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+        }
+        listOf("--%", "--%").forEach { label ->
+            val gaugeSizePx = (56 * density).roundToInt()
+            val gauge = TextView(context).apply {
+                text = label
+                textSize = 12f
+                setTextColor(Color.WHITE)
+                gravity = Gravity.CENTER
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(Color.parseColor("#33FFFFFF"))
+                    setStroke((2 * density).roundToInt(), Color.parseColor("#4FC3F7"))
+                }
+            }
+            gaugeRow.addView(gauge, LinearLayout.LayoutParams(gaugeSizePx, gaugeSizePx).apply {
+                marginEnd = (6 * density).roundToInt()
+                marginStart = (6 * density).roundToInt()
+            })
+        }
+        gamePanel.addView(gaugeRow, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            bottomMargin = (10 * density).roundToInt()
+        })
+
+        val modeRow = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            weightSum = 3f
+        }
+        listOf("Saving", "Balanced", "Boost").forEachIndexed { i, label ->
+            val btn = TextView(context).apply {
+                text = label
+                textSize = 10f
+                gravity = Gravity.CENTER
+                setTextColor(if (i == 1) Color.BLACK else Color.WHITE)
+                setPadding(0, (6 * density).roundToInt(), 0, (6 * density).roundToInt())
+                setBackgroundColor(if (i == 1) Color.parseColor("#4FC3F7") else Color.parseColor("#33FFFFFF"))
+            }
+            modeRow.addView(btn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = if (i < 2) (4 * density).roundToInt() else 0
+            })
+        }
+        gamePanel.addView(modeRow, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            bottomMargin = (10 * density).roundToInt()
+        })
+
+        val iconRow = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            weightSum = 4f
+        }
+        listOf("\uD83D\uDCF7", "\uD83C\uDFA5", "\uD83D\uDCF6", "\uD83E\uDDF9").forEach { emoji ->
+            val iconBtn = TextView(context).apply {
+                text = emoji
+                textSize = 16f
+                gravity = Gravity.CENTER
+                setOnClickListener {
+                    Toast.makeText(context, "Not available in this build", Toast.LENGTH_SHORT).show()
+                }
+            }
+            iconRow.addView(iconBtn, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
+        }
+        gamePanel.addView(iconRow, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            bottomMargin = (10 * density).roundToInt()
+        })
+
+        val brightnessLabel = TextView(context).apply {
+            text = "Brightness"
+            textSize = 9f
+            setTextColor(Color.parseColor("#CCFFFFFF"))
+        }
+        gamePanel.addView(brightnessLabel)
+
+        val brightnessSeekBar = android.widget.SeekBar(context).apply {
+            max = 100
+            progress = if (windowLayoutParams.screenBrightness in 0f..1f) (windowLayoutParams.screenBrightness * 100).roundToInt() else 80
+            setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        windowLayoutParams.screenBrightness = progress / 100f
+                        windowManager.updateViewLayout(binding.root, windowLayoutParams)
+                    }
+                }
+                override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            })
+        }
+        gamePanel.addView(brightnessSeekBar)
+
+        val panelParams = ConstraintLayout.LayoutParams(panelWidthPx, ConstraintLayout.LayoutParams.WRAP_CONTENT).apply {
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            topMargin = (44 * density).roundToInt()
+            rightMargin = (8 * density).roundToInt()
+        }
+        (binding.freeformRoot as ConstraintLayout).addView(gamePanel, panelParams)
+        gamePanel.elevation = 200f
+
+        val edgeHeightPx = (80 * density).roundToInt()
+        val edgeWidthPx = (28 * density).roundToInt()
+        val edgeDetector = View(context).apply {
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(Color.parseColor("#66FFFFFF"))
+                cornerRadius = 6 * density
+            }
+        }
+        val edgeParams = ConstraintLayout.LayoutParams(edgeWidthPx, edgeHeightPx).apply {
             topToTop = ConstraintLayout.LayoutParams.PARENT_ID
             bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
             endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-            topMargin = edgeTopMarginPx
-            bottomMargin = (56 * context.resources.displayMetrics.density).roundToInt()
         }
         (binding.freeformRoot as ConstraintLayout).addView(edgeDetector, edgeParams)
         edgeDetector.elevation = 150f
 
-        var edgeDownX = 0f
-        edgeDetector.setOnTouchListener { _, event ->
-            when (event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    edgeDownX = event.rawX
-                    true
-                }
-                MotionEvent.ACTION_MOVE -> {
-                    val dx = edgeDownX - event.rawX
-                    if (!isGamePanelOpen && dx > (30 * context.resources.displayMetrics.density)) {
-                        openGamePanel()
-                    }
-                    true
-                }
-                MotionEvent.ACTION_UP -> {
-                    val dx = edgeDownX - event.rawX
-                    if (isGamePanelOpen && kotlin.math.abs(dx) < (10 * context.resources.displayMetrics.density)) {
-                        closeGamePanel()
-                    }
-                    true
-                }
-                else -> false
-            }
+        edgeDetector.setOnClickListener {
+            if (isGamePanelOpen) closeGamePanel() else openGamePanel()
         }
     }
 
     private fun openGamePanel() {
         isGamePanelOpen = true
-        gamePanel.animate().translationX(0f).setDuration(200).start()
+        gamePanel.visibility = View.VISIBLE
+        gamePanel.animate().alpha(1f).setDuration(200).start()
     }
 
     private fun closeGamePanel() {
         isGamePanelOpen = false
-        val panelWidthPx = gamePanel.width
-        gamePanel.animate().translationX(panelWidthPx.toFloat()).setDuration(200).start()
+        gamePanel.animate().alpha(0f).setDuration(200).withEndAction {
+            gamePanel.visibility = View.GONE
+        }.start()
     }
     private fun performBackKey() {
         val downEvent = KeyEvent(
