@@ -483,11 +483,29 @@ class FreeformView(
 
         binding.freeformRoot.alpha = 1f
         binding.textureView.alpha = 0f
+        addTopBarBackground()
         addCloseButton()
         addDragHandle()
         addResizeHandle()
         addMinimizeButton()
     }
+        private fun addTopBarBackground() {
+        val topBar = View(context).apply {
+            background = android.graphics.drawable.GradientDrawable().apply {
+                setColor(Color.parseColor("#66000000"))
+                cornerRadius = 20 * context.resources.displayMetrics.density
+            }
+        }
+        val barHeightPx = (36 * context.resources.displayMetrics.density).roundToInt()
+        val barWidthPx = (140 * context.resources.displayMetrics.density).roundToInt()
+        val params = ConstraintLayout.LayoutParams(barWidthPx, barHeightPx).apply {
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            topMargin = (4 * context.resources.displayMetrics.density).roundToInt()
+        }
+        (binding.freeformRoot as ConstraintLayout).addView(topBar, params)
+        topBar.elevation = 90f
+        }
 private fun addCloseButton() {
         val closeButton = TextView(context).apply {
             text = "\u2715"
@@ -616,7 +634,6 @@ private fun addCloseButton() {
                     }
                     isDragging = false
                     true
-                        }
                 }
                 else -> false
             }
