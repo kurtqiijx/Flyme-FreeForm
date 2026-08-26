@@ -486,6 +486,7 @@ class FreeformView(
         addCloseButton()
         addDragHandle()
         addResizeHandle()
+        addMinimizeButton()
     }
 private fun addCloseButton() {
         val closeButton = TextView(context).apply {
@@ -567,10 +568,55 @@ private fun addCloseButton() {
                     }
                     true
                 }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                        MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     longPressRunnable?.let { longPressHandler.removeCallbacks(it) }
+                    if (isDragging) {
+                        val snapThresholdPx = (24 * context.resources.displayMetrics.density).roundToInt()
+                        val currentX = windowLayoutParams.x
+                        val currentY = windowLayoutParams.y
+                        val windowW = windowLayoutParams.width
+                        val windowH = windowLayoutParams.height
+
+                        var targetX = currentX
+                        var targetY = currentY
+
+                        if (currentX <= snapThresholdPx) {
+                            targetX = 0
+                        } else if (realScreenWidth - (currentX + windowW) <= snapThresholdPx) {
+                            targetX = realScreenWidth - windowW
+                        }
+
+                        if (currentY <= snapThresholdPx) {
+                            targetY = 0
+                        } else if (realScreenHeight - (currentY + windowH) <= snapThresholdPx) {
+                            targetY = realScreenHeight - windowH
+                        }
+
+                        if (targetX != currentX || targetY != currentY) {
+                            val animatorX = ValueAnimator.ofInt(currentX, targetX)
+                            val animatorY = ValueAnimator.ofInt(currentY, targetY)
+                            animatorX.addUpdateListener {
+                                windowManager.updateViewLayout(
+                                    binding.root,
+                                    windowLayoutParams.apply { x = it.animatedValue as Int }
+                                )
+                            }
+                            animatorY.addUpdateListener {
+                                windowManager.updateViewLayout(
+                                    binding.root,
+                                    windowLayoutParams.apply { y = it.animatedValue as Int }
+                                )
+                            }
+                            AnimatorSet().apply {
+                                playTogether(animatorX, animatorY)
+                                duration = 150
+                                start()
+                            }
+                        }
+                    }
                     isDragging = false
                     true
+                        }
                 }
                 else -> false
             }
@@ -665,7 +711,34 @@ private fun addCloseButton() {
             }
         }
         }
-    
+        private fun addMinimizeButton() {
+        val minimizeButton = TextView(context).apply {
+            text = "\u2013"
+            textSize = 16f
+            setTextColor(Color.WHITE)
+            gravity = Gravity.CENTER
+            background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.OVAL
+                setColor(Color.parseColor("#9E9E9E"))
+            }
+            setOnClickListener {
+                mScaleX = 1f
+                mScaleY = goFloatScale
+                isZoomOut = true
+                notifyToFloat()
+            }
+        }
+        val sizePx = (28 * context.resources.displayMetrics.density).roundToInt()
+        val marginPx = (8 * context.resources.displayMetrics.density).roundToInt()
+        val params = ConstraintLayout.LayoutParams(sizePx, sizePx).apply {
+            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
+            topMargin = marginPx
+            rightMargin = marginPx + sizePx + marginPx
+        }
+        (binding.freeformRoot as ConstraintLayout).addView(minimizeButton, params)
+        minimizeButton.elevation = 100f
+        }
     private fun performBackKey() {
         val downEvent = KeyEvent(
             SystemClock.uptimeMillis(),
