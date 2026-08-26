@@ -588,53 +588,9 @@ private fun addCloseButton() {
                 }
                         MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     longPressRunnable?.let { longPressHandler.removeCallbacks(it) }
-                    if (isDragging) {
-                        val snapThresholdPx = (24 * context.resources.displayMetrics.density).roundToInt()
-                        val currentX = windowLayoutParams.x
-                        val currentY = windowLayoutParams.y
-                        val windowW = windowLayoutParams.width
-                        val windowH = windowLayoutParams.height
-
-                        var targetX = currentX
-                        var targetY = currentY
-
-                        if (currentX <= snapThresholdPx) {
-                            targetX = 0
-                        } else if (realScreenWidth - (currentX + windowW) <= snapThresholdPx) {
-                            targetX = realScreenWidth - windowW
-                        }
-
-                        if (currentY <= snapThresholdPx) {
-                            targetY = 0
-                        } else if (realScreenHeight - (currentY + windowH) <= snapThresholdPx) {
-                            targetY = realScreenHeight - windowH
-                        }
-
-                        if (targetX != currentX || targetY != currentY) {
-                            val animatorX = ValueAnimator.ofInt(currentX, targetX)
-                            val animatorY = ValueAnimator.ofInt(currentY, targetY)
-                            animatorX.addUpdateListener {
-                                windowManager.updateViewLayout(
-                                    binding.root,
-                                    windowLayoutParams.apply { x = it.animatedValue as Int }
-                                )
-                            }
-                            animatorY.addUpdateListener {
-                                windowManager.updateViewLayout(
-                                    binding.root,
-                                    windowLayoutParams.apply { y = it.animatedValue as Int }
-                                )
-                            }
-                            AnimatorSet().apply {
-                                playTogether(animatorX, animatorY)
-                                duration = 150
-                                start()
-                            }
-                        }
-                    }
                     isDragging = false
                     true
-                }
+                        }
                 else -> false
             }
         }
