@@ -1047,12 +1047,7 @@ private fun addCloseButton() {
 private fun genCenterLocation(): IntArray {
     val center = intArrayOf(0, 0)
     if (!FreeformHelper.screenIsPortrait(screenRotation)) {
-        center[0] = (freeformWidth - rootHeight + screenPaddingX) / 2
-        if (!hangUpPosition[0])
-            center[0] = (freeformWidth - rootHeight + screenPaddingX) / -2
-        if (virtualDisplayRotation == VIRTUAL_DISPLAY_ROTATION_LANDSCAPE) {
-            center[0] = 0
-        }
+        center[0] = 0
     }
     return center
 }
