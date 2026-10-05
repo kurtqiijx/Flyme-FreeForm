@@ -1329,7 +1329,7 @@ private fun genCenterLocation(): IntArray {
     }
 
     private var isZoomOut = false
-
+    private var isFullscreenToggled = false
     private fun handleToFloatScale(dx: Float, dy: Float) {
         if (isFloating) return
 
