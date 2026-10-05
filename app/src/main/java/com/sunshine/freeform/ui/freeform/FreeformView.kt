@@ -711,9 +711,10 @@ private fun addCloseButton() {
         resetScale()
         binding.cardRoot.radius = context.resources.getDimension(R.dimen.card_corner_radius)
         binding.bottomBar.root.visibility = View.VISIBLE
-        initView()
+        initView()        
     }
-        }
+    }
+    }
     val sizePx = (28 * context.resources.displayMetrics.density).roundToInt()
     val marginPx = (8 * context.resources.displayMetrics.density).roundToInt()
     val params = ConstraintLayout.LayoutParams(sizePx, sizePx).apply {
