@@ -482,6 +482,7 @@ class FreeformView(
         addDragHandle()
         addResizeHandle()
         addMinimizeButton()
+        addWindowOutline()
     }
         private fun addTopBarBackground() {
         val topBar = View(context).apply {
@@ -679,32 +680,48 @@ private fun addCloseButton() {
         }
         }
         private fun addMinimizeButton() {
-        val minimizeButton = TextView(context).apply {
-            text = "\u2013"
-            textSize = 16f
-            setTextColor(Color.WHITE)
-            gravity = Gravity.CENTER
-            background = android.graphics.drawable.GradientDrawable().apply {
-                shape = android.graphics.drawable.GradientDrawable.OVAL
-                setColor(Color.parseColor("#9E9E9E"))
-            }
-            setOnClickListener {
-                mScaleX = 1f
-                mScaleY = goFloatScale
-                isZoomOut = true
-                notifyToFloat()
-            }
+    val fullscreenButton = TextView(context).apply {
+        text = "\u25A1"
+        textSize = 16f
+        setTextColor(Color.WHITE)
+        gravity = Gravity.CENTER
+        background = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.OVAL
+            setColor(Color.parseColor("#9E9E9E"))
         }
-        val sizePx = (28 * context.resources.displayMetrics.density).roundToInt()
-        val marginPx = (8 * context.resources.displayMetrics.density).roundToInt()
-        val params = ConstraintLayout.LayoutParams(sizePx, sizePx).apply {
-            topToTop = ConstraintLayout.LayoutParams.PARENT_ID
-            endToEnd = ConstraintLayout.LayoutParams.PARENT_ID
-            topMargin = marginPx
-            rightMargin = marginPx + sizePx + marginPx
+        setOnClickListener {
+            mScaleX = 1f
+            mScaleY = 1f
+            binding.cardRoot.radius = 0f
+            (binding.cardRoot.layoutParams as ConstraintLayout.LayoutParams).apply {
+                topMargin = 0
+                bottomMargin = 0
+                rightMargin = 0
+            }
+            binding.cardRoot.requestLayout()
+            windowManager.updateViewLayout(binding.root, windowLayoutParams.apply {
+                width = rootWidth
+                height = rootHeight
+            })
         }
-        (binding.freeformRoot as ConstraintLayout).addView(minimizeButton, params)
-        minimizeButton.elevation = 100f
+    }
+    val sizePx = (28 * context.resources.displayMetrics.density).roundToInt()
+    val marginPx = (8 * context.resources.displayMetrics.density).roundToInt()
+    val params = ConstraintLayout.LayoutParams(sizePx, sizePx).apply {
+        topToTop = ConstraintLayout.LayoutParams.PARENT_ID
+        startToStart = ConstraintLayout.LayoutParams.PARENT_ID
+        topMargin = marginPx
+        leftMargin = marginPx
+    }
+    private fun addWindowOutline() {
+    binding.cardRoot.foreground = android.graphics.drawable.GradientDrawable().apply {
+        shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+        setStroke((1 * context.resources.displayMetrics.density).roundToInt(), Color.WHITE)
+        cornerRadius = context.resources.getDimension(R.dimen.card_corner_radius)
+    }
+    }
+    (binding.freeformRoot as ConstraintLayout).addView(fullscreenButton, params)
+    fullscreenButton.elevation = 100f
         }
     private fun performBackKey() {
         val downEvent = KeyEvent(
