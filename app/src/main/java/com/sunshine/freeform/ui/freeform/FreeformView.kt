@@ -690,21 +690,30 @@ private fun addCloseButton() {
             setColor(Color.parseColor("#9E9E9E"))
         }
         setOnClickListener {
-            mScaleX = 1f
-            mScaleY = 1f
-            binding.cardRoot.radius = 0f
-            (binding.cardRoot.layoutParams as ConstraintLayout.LayoutParams).apply {
-                topMargin = 0
-                bottomMargin = 0
-                rightMargin = 0
-            }
-            binding.cardRoot.requestLayout()
-            windowManager.updateViewLayout(binding.root, windowLayoutParams.apply {
-                width = rootWidth
-                height = rootHeight
-            })
+    isFullscreenToggled = !isFullscreenToggled
+    if (isFullscreenToggled) {
+        mScaleX = 1f
+        mScaleY = 1f
+        binding.cardRoot.radius = 0f
+        (binding.cardRoot.layoutParams as ConstraintLayout.LayoutParams).apply {
+            topMargin = 0
+            bottomMargin = 0
+            rightMargin = 0
+            leftMargin = 0
         }
+        binding.cardRoot.requestLayout()
+        binding.bottomBar.root.visibility = View.GONE
+        windowManager.updateViewLayout(binding.root, windowLayoutParams.apply {
+            width = rootWidth
+            height = rootHeight
+        })
+    } else {
+        resetScale()
+        binding.cardRoot.radius = context.resources.getDimension(R.dimen.card_corner_radius)
+        binding.bottomBar.root.visibility = View.VISIBLE
+        initView()
     }
+        }
     val sizePx = (28 * context.resources.displayMetrics.density).roundToInt()
     val marginPx = (8 * context.resources.displayMetrics.density).roundToInt()
     val params = ConstraintLayout.LayoutParams(sizePx, sizePx).apply {
@@ -719,7 +728,7 @@ private fun addCloseButton() {
         private fun addWindowOutline() {
 binding.cardRoot.foreground = android.graphics.drawable.GradientDrawable().apply {
     shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-    setStroke((1 * context.resources.displayMetrics.density).roundToInt(), Color.WHITE)
+    setStroke(1, Color.parseColor("#9E9E9E"))
     cornerRadius = context.resources.getDimension(R.dimen.card_corner_radius)
 }
         }
