@@ -713,15 +713,15 @@ private fun addCloseButton() {
         topMargin = marginPx
         leftMargin = marginPx
     }
-    private fun addWindowOutline() {
-    binding.cardRoot.foreground = android.graphics.drawable.GradientDrawable().apply {
-        shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-        setStroke((1 * context.resources.displayMetrics.density).roundToInt(), Color.WHITE)
-        cornerRadius = context.resources.getDimension(R.dimen.card_corner_radius)
-    }
-    }
     (binding.freeformRoot as ConstraintLayout).addView(fullscreenButton, params)
     fullscreenButton.elevation = 100f
+        }
+        private fun addWindowOutline() {
+binding.cardRoot.foreground = android.graphics.drawable.GradientDrawable().apply {
+    shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+    setStroke((1 * context.resources.displayMetrics.density).roundToInt(), Color.WHITE)
+    cornerRadius = context.resources.getDimension(R.dimen.card_corner_radius)
+}
         }
     private fun performBackKey() {
         val downEvent = KeyEvent(
