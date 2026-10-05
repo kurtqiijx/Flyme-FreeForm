@@ -527,7 +527,7 @@ private fun addCloseButton() {
 }    private fun addDragHandle() {
     val dragHandle = TextView(context).apply {
         text = "\u2022\u2022\u2022"
-        textSize = 30f
+        textSize = 24f
         setTextColor(Color.parseColor("#4CAF50"))
         gravity = Gravity.CENTER
     }
