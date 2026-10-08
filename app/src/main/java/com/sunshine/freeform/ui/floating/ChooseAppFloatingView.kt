@@ -187,7 +187,7 @@ class ChooseAppFloatingView(
 
         Collections.sort(allFreeFormApps, AppsComparable())
 
-        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.layoutManager = GridLayoutManager(context, 2)
         recyclerView.adapter = ChooseAppFloatingAdapter(
             context,
             allFreeFormApps,
