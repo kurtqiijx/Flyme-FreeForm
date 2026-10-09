@@ -690,30 +690,15 @@ private fun addCloseButton() {
             setColor(Color.parseColor("#9E9E9E"))
         }
         setOnClickListener {
-    isFullscreenToggled = !isFullscreenToggled
-    if (isFullscreenToggled) {
-        mScaleX = 1f
-        mScaleY = 1f
-        binding.cardRoot.radius = 0f
-        (binding.cardRoot.layoutParams as ConstraintLayout.LayoutParams).apply {
-            topMargin = 0
-            bottomMargin = 0
-            rightMargin = 0
-            leftMargin = 0
+            isDestroy = true
+            val tasks = ArrayList(taskList)
+            runCatching {
+                tasks.forEach {
+                    activityTaskManager.moveRootTaskToDisplay(it, Display.DEFAULT_DISPLAY)
+                }
+            }
+            destroy()
         }
-        binding.cardRoot.requestLayout()
-        binding.bottomBar.root.visibility = View.GONE
-        windowManager.updateViewLayout(binding.root, windowLayoutParams.apply {
-            width = rootWidth
-            height = rootHeight
-        })
-    } else {
-        resetScale()
-        binding.cardRoot.radius = context.resources.getDimension(R.dimen.card_corner_radius)
-        binding.bottomBar.root.visibility = View.VISIBLE
-        initView()        
-    }
-    }
     }
     val sizePx = (28 * context.resources.displayMetrics.density).roundToInt()
     val marginPx = (8 * context.resources.displayMetrics.density).roundToInt()
