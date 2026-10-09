@@ -9,4 +9,15 @@
 > Movable Floating window
 > gamemode (Not really)
 > and 'X button
->
+
+
+
+
+
+
+
+
+An Unofficial Fork for Flyme-freeform 
+This is for personal use, if you want to use it
+you can, but keep in mind that this might be
+only for my device
