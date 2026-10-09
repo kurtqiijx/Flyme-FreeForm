@@ -192,7 +192,13 @@ class FreeformView(
             return tmp
         }
     private var rootWidth = 0
-    get() = realScreenWidth
+    get() {
+        var tmp = if (FreeformHelper.screenIsPortrait(screenRotation)) realScreenWidth else realScreenHeight
+        if (virtualDisplayRotation == VIRTUAL_DISPLAY_ROTATION_LANDSCAPE) {
+            tmp = realScreenWidth
+        }
+        return tmp
+    }
 
     // 小窗缩放比例
     private var mScaleX = 1f
