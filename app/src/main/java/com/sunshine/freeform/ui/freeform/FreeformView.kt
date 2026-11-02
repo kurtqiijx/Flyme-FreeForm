@@ -1103,7 +1103,7 @@ private fun genCenterLocation(): IntArray {
             // 竖屏状态，以宽度为基准计算，确保宽高比正确
             freeformWidth = (rootWidth * config.freeformSize).roundToInt()
             val contentHeight = (freeformWidth - (freeformShadow * 2)) / config.widthHeightRatio
-            freeformWidth = (((freeformHeight + cardWidthMargin) * config.widthHeightRatio) * 1.25f).roundToInt()
+            freeformWidth = ((freeformHeight + cardWidthMargin) * config.widthHeightRatio).roundToInt()
             // 横屏状态保持原有逻辑
             freeformHeight = (rootWidth * config.freeformSizeLand).roundToInt()
             freeformHeight += cardHeightMargin.roundToInt()
